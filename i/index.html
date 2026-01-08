@@ -42,9 +42,9 @@
 
 <script>
   // 1) URLから item_id を取る（/i/SET-003 形式を想定）
-  const pathParts = location.pathname.split("/").filter(Boolean);
-  const itemId = pathParts.length >= 2 && pathParts[0] === "i" ? pathParts[1] : "UNKNOWN";
-  document.getElementById("itemId").textContent = itemId;
+  const params = new URLSearchParams(location.search);
+　const itemId = params.get("item") || "UNKNOWN";
+　document.getElementById("itemId").textContent = itemId;
 
   // 2) Slackリンクを設定（あなたの環境のIDに置換）
   const TEAM_ID = "T01234567";
