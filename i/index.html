@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>医開・物品管理</title>
+  <title>物品管理</title>
   <style>
     body{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;margin:16px;line-height:1.4}
     .card{border:1px solid #ddd;border-radius:14px;padding:16px;max-width:520px;margin:auto}
@@ -22,7 +22,7 @@
 
 <body>
   <div class="card">
-    <div class="title">医開・物品管理</div>
+    <div class="title">課内 物品管理</div>
 
     <!-- 物品名は任意（あとでマスタ連携してもOK） -->
     <div id="itemName" style="color:#444;">（物品名は任意）</div>
@@ -30,15 +30,43 @@
     <!-- URLの ?item=SET-003 を表示（確認用） -->
     <div class="itemid" id="itemId">UNKNOWN</div>
 
-    <!-- Slack Link Trigger を叩くボタン（貸出 / 返却） -->
-    <div class="row">
-      <a id="checkoutUrl" href="#">
-        <button class="btn primary" type="button">✅ 貸し出す</button>
+    <!-- 使い方（エラーではなく手順として案内する） -->
+    <ol class="hint">
+      <li>下のボタンでSlackの入力フォームが開きます（物品IDは自動で渡します）。</li>
+      <li>Slackが開かない場合は、先にSlackへログインしてください。</li>
+    </ol>
+
+    <!-- ログイン誘導（未ログイン時の“促し”） -->
+    <div class="hint">
+      <a id="slackLogin" href="#" target="_blank" rel="noopener">
+        👉 Slackにログインする（開かない場合のみ）
       </a>
-      <a id="checkinUrl" href="#">
-        <button class="btn secondary" type="button">📦 返却を受け取る</button>
+      <div class="small">※ログイン後、このページに戻ってもう一度「貸し出す / 返却」を押してください。</div>
+    </div>
+
+    <!-- A案：Slack Link Trigger を叩くボタン（貸出 / 返却） -->
+    <div class="row">
+      <a id="checkoutLink" href="#">
+        <button class="btn primary" type="button">✅ 貸し出す（Slackが開きます）</button>
+      </a>
+      <a id="checkinLink" href="#">
+        <button class="btn secondary" type="button">📦 返却を受け取る（Slackが開きます）</button>
       </a>
     </div>
+
+    <!-- 保険：物品管理チャンネルを直接開く（TEAM_ID不要のURLでOK） -->
+    <div class="hint" style="margin-top:12px;">
+      うまくいかない場合：<br/>
+      <a id="slackChannelWeb" href="#" target="_blank" rel="noopener">
+        物品管理チャンネルをブラウザで開く
+      </a>
+    </div>
+
+    <!-- （任意）デバッグ表示：現在のリンク先 -->
+    <div class="hint small" style="margin-top:12px;">
+      <div>Debug: <span id="debug"></span></div>
+    </div>
+  </div>
 
 <script>
   // =========================
@@ -68,9 +96,8 @@
   // 2) Slackリンクを設定
   // =========================
   // Link Trigger URL（Slack側でモーダルを開き、item を受け取る想定）
-  const checkoutUrl = `https://r-engineeringteam.slack.com/shortcuts/${encodeURIComponent(CHECKOUT_TRIGGER_ID)}?item=${encodeURIComponent(itemId)}`;
-　const checkinUrl  = `https://r-engineeringteam.slack.com/shortcuts/${encodeURIComponent(CHECKIN_TRIGGER_ID)}?item=${encodeURIComponent(itemId)}`;
-
+  const checkoutUrl = `https://slack.com/shortcuts/${encodeURIComponent(CHECKOUT_TRIGGER_ID)}?item=${encodeURIComponent(itemId)}`;
+  const checkinUrl  = `https://slack.com/shortcuts/${encodeURIComponent(CHECKIN_TRIGGER_ID)}?item=${encodeURIComponent(itemId)}`;
 
   document.getElementById("checkoutLink").href = checkoutUrl;
   document.getElementById("checkinLink").href  = checkinUrl;
