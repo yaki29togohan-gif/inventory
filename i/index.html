@@ -14,49 +14,73 @@
     .secondary{background:#eee;color:#111}
     .hint{color:#555;font-size:13px;margin-top:10px}
     .toast{color:#0a7; font-size:13px; margin-top:8px; display:none}
+    .row{display:flex; gap:10px}
+    .row a{flex:1; text-decoration:none}
   </style>
 </head>
+
 <body>
   <div class="card">
-    <div class="title">医開・物品管理</div>
+    <div class="title">課内 物品管理</div>
 
     <div id="itemName" style="color:#444;">（物品名は任意）</div>
-    <div class="itemid" id="itemId">SET-003</div>
+    <div class="itemid" id="itemId">UNKNOWN</div>
 
+    <!-- 便利機能（任意）：コピー -->
     <button class="btn secondary" id="copyBtn">📋 物品IDをコピー</button>
     <div class="toast" id="toast">コピーしました</div>
 
-    <a id="slackLink" href="#" style="text-decoration:none;">
-      <button class="btn primary">✅ Slackで登録する（チャンネルを開く）</button>
-    </a>
-
-    <div class="hint">
-      Slackで「貸出登録」または「返却受領」フォームを開き、物品IDを貼り付けて登録してください。<br/>
-      Slackが開かない場合：チャンネルをブラウザで開いてください（PCでも可）。
+    <!-- A案：Slack Link Trigger を叩くボタン（貸出 / 返却） -->
+    <div class="row">
+      <a id="checkoutLink" href="#">
+        <button class="btn primary">✅ 貸し出す（Slackフォームを開く）</button>
+      </a>
+      <a id="checkinLink" href="#">
+        <button class="btn secondary">📦 返却を受け取る（Slackフォームを開く）</button>
+      </a>
     </div>
 
+    <div class="hint">
+      ※上のボタンでSlackの入力フォームが直接開きます（物品IDは自動で渡します）。<br/>
+      開かない場合：Slackアプリにログイン済みか確認してください。
+    </div>
+
+    <!-- 保険：物品管理チャンネルを開くリンク（任意） -->
     <div class="hint" style="margin-top:8px;">
-      <a id="slackWeb" href="#" target="_blank" rel="noopener">Slackをブラウザで開く</a>
+      <a id="slackChannelWeb" href="#" target="_blank" rel="noopener">物品管理チャンネルをブラウザで開く</a>
     </div>
   </div>
 
 <script>
-  // 1) URLから item_id を取る（/i/SET-003 形式を想定）
-  const params = new URLSearchParams(location.search);
-　const itemId = params.get("item") || "UNKNOWN";
-　document.getElementById("itemId").textContent = itemId;
+  // ========= 設定：Slack Link Trigger ID（Slackで発行される） =========
+  // 例：Slackの管理画面/アプリ設定で Link Trigger を作ると、trigger_id が払い出されます
+  const CHECKOUT_TRIGGER_ID = "<CHECKOUT_TRIGGER_ID>"; // 貸出用
+  const CHECKIN_TRIGGER_ID  = "<CHECKIN_TRIGGER_ID>";  // 返却用
 
-  // 2) Slackリンクを設定（あなたの環境のIDに置換）
+  // （任意）物品管理チャンネル（ブラウザで開く保険）
   const TEAM_ID = "T01234567";
   const CHANNEL_ID = "C089ABCDE";
 
-  const slackDeep = `slack://channel?team=${TEAM_ID}&id=${CHANNEL_ID}`;
-  const slackWeb  = `https://app.slack.com/client/${TEAM_ID}/${CHANNEL_ID}`;
+  // ========= 1) QRのURLから item を読む（GitHub Pages向け） =========
+  // 例：https://.../inventory/i/?item=SET-003
+  const params = new URLSearchParams(location.search);
+  const itemId = params.get("item") || "UNKNOWN";
+  document.getElementById("itemId").textContent = itemId;
 
-  document.getElementById("slackLink").href = slackDeep;
-  document.getElementById("slackWeb").href = slackWeb;
+  // ========= 2) Link Trigger URL を組み立ててボタンに設定 =========
+  // Slack Link Trigger は slack.com のURL（shortcuts）として起動します
+  // item=SET-003 をそのまま渡す（Slack側で受け取ってモーダル初期値に使う）
+  const checkoutUrl = `https://slack.com/shortcuts/${encodeURIComponent(CHECKOUT_TRIGGER_ID)}?item=${encodeURIComponent(itemId)}`;
+  const checkinUrl  = `https://slack.com/shortcuts/${encodeURIComponent(CHECKIN_TRIGGER_ID)}?item=${encodeURIComponent(itemId)}`;
 
-  // 3) 物品IDコピー
+  document.getElementById("checkoutLink").href = checkoutUrl;
+  document.getElementById("checkinLink").href  = checkinUrl;
+
+  // ========= 3) （任意）チャンネルをブラウザで開くリンク =========
+  const slackChannelWeb = `https://app.slack.com/client/${TEAM_ID}/${CHANNEL_ID}`;
+  document.getElementById("slackChannelWeb").href = slackChannelWeb;
+
+  // ========= 4) （任意）物品IDコピー =========
   const toast = document.getElementById("toast");
   document.getElementById("copyBtn").addEventListener("click", async () => {
     try{
