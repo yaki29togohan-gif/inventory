@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>物品管理</title>
+  <style>
+    body{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;margin:16px;line-height:1.4}
+    .card{border:1px solid #ddd;border-radius:14px;padding:16px;max-width:520px;margin:auto}
+    .title{font-size:18px;font-weight:700;margin-bottom:8px}
+    .itemid{font-size:28px;font-weight:800;margin:8px 0}
+    .btn{display:block;width:100%;padding:14px;border-radius:12px;border:0;font-size:16px;font-weight:700;margin-top:10px}
+    .primary{background:#111;color:#fff}
+    .secondary{background:#eee;color:#111}
+    .hint{color:#555;font-size:13px;margin-top:10px}
+    .toast{color:#0a7; font-size:13px; margin-top:8px; display:none}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="title">課内 物品管理</div>
+
+    <div id="itemName" style="color:#444;">（物品名は任意）</div>
+    <div class="itemid" id="itemId">SET-003</div>
+
+    <button class="btn secondary" id="copyBtn">📋 物品IDをコピー</button>
+    <div class="toast" id="toast">コピーしました</div>
+
+    <a id="slackLink" href="#" style="text-decoration:none;">
+      <button class="btn primary">✅ Slackで登録する（チャンネルを開く）</button>
+    </a>
+
+    <div class="hint">
+      Slackで「貸出登録」または「返却受領」フォームを開き、物品IDを貼り付けて登録してください。<br/>
+      Slackが開かない場合：チャンネルをブラウザで開いてください（PCでも可）。
+    </div>
+
+    <div class="hint" style="margin-top:8px;">
+      <a id="slackWeb" href="#" target="_blank" rel="noopener">Slackをブラウザで開く</a>
+    </div>
+  </div>
+
+<script>
+  // 1) URLから item_id を取る（/i/SET-003 形式を想定）
+  const pathParts = location.pathname.split("/").filter(Boolean);
+  const itemId = pathParts.length >= 2 && pathParts[0] === "i" ? pathParts[1] : "UNKNOWN";
+  document.getElementById("itemId").textContent = itemId;
+
+  // 2) Slackリンクを設定（あなたの環境のIDに置換）
+  const TEAM_ID = "T01234567";
+  const CHANNEL_ID = "C089ABCDE";
+
+  const slackDeep = `slack://channel?team=${TEAM_ID}&id=${CHANNEL_ID}`;
+  const slackWeb  = `https://app.slack.com/client/${TEAM_ID}/${CHANNEL_ID}`;
+
+  document.getElementById("slackLink").href = slackDeep;
+  document.getElementById("slackWeb").href = slackWeb;
+
+  // 3) 物品IDコピー
+  const toast = document.getElementById("toast");
+  document.getElementById("copyBtn").addEventListener("click", async () => {
+    try{
+      await navigator.clipboard.writeText(itemId);
+      toast.style.display = "block";
+      setTimeout(()=> toast.style.display = "none", 1200);
+    }catch(e){
+      alert("コピーできませんでした。物品IDを長押ししてコピーしてください。");
+    }
+  });
+</script>
+</body>
+</html>
