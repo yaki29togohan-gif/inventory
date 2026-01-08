@@ -21,22 +21,18 @@
 
 <body>
   <div class="card">
-    <div class="title">課内 物品管理</div>
+    <div class="title">医開・物品管理</div>
 
     <div id="itemName" style="color:#444;">（物品名は任意）</div>
     <div class="itemid" id="itemId">UNKNOWN</div>
 
-    <!-- 便利機能（任意）：コピー -->
-    <button class="btn secondary" id="copyBtn">📋 物品IDをコピー</button>
-    <div class="toast" id="toast">コピーしました</div>
-
-    <!-- A案：Slack Link Trigger を叩くボタン（貸出 / 返却） -->
+    <!-- Slack Link Trigger を叩くボタン（貸出 / 返却） -->
     <div class="row">
       <a id="checkoutLink" href="#">
-        <button class="btn primary">✅ 貸し出す（Slackフォームを開く）</button>
+        <button class="btn primary">✅ 貸し出す</button>
       </a>
       <a id="checkinLink" href="#">
-        <button class="btn secondary">📦 返却を受け取る（Slackフォームを開く）</button>
+        <button class="btn secondary">📦 返却を受け取る</button>
       </a>
     </div>
 
@@ -59,7 +55,7 @@
 
   // （任意）物品管理チャンネル（ブラウザで開く保険）
   const TEAM_ID = "T01234567";
-  const CHANNEL_ID = "C089ABCDE";
+  const CHANNEL_ID = "C04TZQE4W95";
 
   // ========= 1) QRのURLから item を読む（GitHub Pages向け） =========
   // 例：https://.../inventory/i/?item=SET-003
@@ -77,20 +73,10 @@
   document.getElementById("checkinLink").href  = checkinUrl;
 
   // ========= 3) （任意）チャンネルをブラウザで開くリンク =========
-  const slackChannelWeb = `https://app.slack.com/client/${TEAM_ID}/${CHANNEL_ID}`;
-  document.getElementById("slackChannelWeb").href = slackChannelWeb;
+  const slackChannelUrl =
+  "https://r-engineeringteam.slack.com/archives/C04TZQE4W95";
+  document.getElementById("slackChannelWeb").href = slackChannelUrl;
 
-  // ========= 4) （任意）物品IDコピー =========
-  const toast = document.getElementById("toast");
-  document.getElementById("copyBtn").addEventListener("click", async () => {
-    try{
-      await navigator.clipboard.writeText(itemId);
-      toast.style.display = "block";
-      setTimeout(()=> toast.style.display = "none", 1200);
-    }catch(e){
-      alert("コピーできませんでした。物品IDを長押ししてコピーしてください。");
-    }
-  });
 </script>
 </body>
 </html>
