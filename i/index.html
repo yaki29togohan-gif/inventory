@@ -96,8 +96,9 @@
   // 2) Slackリンクを設定
   // =========================
   // Link Trigger URL（Slack側でモーダルを開き、item を受け取る想定）
-  const checkoutUrl = `https://slack.com/shortcuts/${encodeURIComponent(CHECKOUT_TRIGGER_ID)}?item=${encodeURIComponent(itemId)}`;
-  const checkinUrl  = `https://slack.com/shortcuts/${encodeURIComponent(CHECKIN_TRIGGER_ID)}?item=${encodeURIComponent(itemId)}`;
+  const checkoutUrl = `https://r-engineeringteam.slack.com/shortcuts/${encodeURIComponent(CHECKOUT_TRIGGER_ID)}?item=${encodeURIComponent(itemId)}`;
+　const checkinUrl  = `https://r-engineeringteam.slack.com/shortcuts/${encodeURIComponent(CHECKIN_TRIGGER_ID)}?item=${encodeURIComponent(itemId)}`;
+
 
   document.getElementById("checkoutLink").href = checkoutUrl;
   document.getElementById("checkinLink").href  = checkinUrl;
