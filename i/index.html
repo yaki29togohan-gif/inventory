@@ -10,15 +10,17 @@
     .title{font-size:18px;font-weight:700;margin-bottom:8px}
     .itemid{font-size:28px;font-weight:800;margin:8px 0}
     .btn{
-      display:block;width:100%;padding:14px;border-radius:12px;
-      border:0;font-size:16px;font-weight:700;margin-top:10px;
-      cursor:pointer;text-align:center;text-decoration:none
+      display:block;width:100%;padding:14px;border-radius:12px;border:0;
+      font-size:16px;font-weight:700;margin-top:10px;cursor:pointer;
+      text-align:center;text-decoration:none
     }
     .primary{background:#111;color:#fff}
     .secondary{background:#eee;color:#111}
     .hint{color:#555;font-size:13px;margin-top:10px}
     .row{display:flex; gap:10px; margin-top:10px}
     .row a{flex:1}
+    .small{font-size:12px;color:#666;margin-top:8px}
+    .link{color:#0b66c3;text-decoration:underline}
   </style>
 </head>
 
@@ -26,66 +28,65 @@
   <div class="card">
     <div class="title">課内 物品管理</div>
 
-    <!-- 物品名は任意 -->
     <div id="itemName" style="color:#444;">（物品名は任意）</div>
-
-    <!-- 物品ID表示 -->
     <div class="itemid" id="itemId">UNKNOWN</div>
 
-    <!-- 説明（最小限） -->
     <div class="hint">
-      下のボタンを押すと Slack が開き、貸出／返却の入力フォームが表示されます。<br/>
-      （未ログインの場合はログイン画面が表示されます）
+      「貸し出す / 返却を受け取る」を押すと Slack の入力フォームが開きます。<br/>
+      開かない場合は、下の「Slackにログイン」を押してログイン後、もう一度ボタンを押してください。
     </div>
 
-    <!-- Slack Link Trigger -->
     <div class="row">
-      <a id="checkoutLink" class="btn primary" href="#">
-        ✅ 貸し出す
-      </a>
-      <a id="checkinLink" class="btn secondary" href="#">
-        📦 返却を受け取る
-      </a>
+      <a id="checkoutLink" class="btn primary" href="#">✅ 貸し出す</a>
+      <a id="checkinLink"  class="btn secondary" href="#">📦 返却を受け取る</a>
     </div>
 
-    <!-- Debug（動作確認中のみ。不要なら削除OK） -->
-    <div class="hint" style="margin-top:12px;font-size:12px;">
+    <!-- これが “さっきのログイン誘導” -->
+    <div class="small">
+      👉 <a id="slackLogin" class="link" href="#" target="_blank" rel="noopener">Slackにログインする（開かない場合のみ）</a>
+    </div>
+
+    <!-- Debug（不要なら丸ごと消してOK） -->
+    <div class="small" style="margin-top:10px;">
       Debug: <span id="debug"></span>
     </div>
   </div>
 
 <script>
   // =========================
-  // 設定（要置換）
+  // 設定（ここだけ置き換え）
   // =========================
 
-  // Slack Link Trigger ID（Slack側で発行された本物を入れる）
-  const CHECKOUT_TRIGGER_ID = "<CHECKOUT_TRIGGER_ID>";
-  const CHECKIN_TRIGGER_ID  = "<CHECKIN_TRIGGER_ID>";
+  // 1) SlackのLink Trigger URL（Slackの管理画面で表示されるURLをそのまま貼る）
+  // 例）https://r-engineeringteam.slack.com/shortcuts/TRxxxxxxxxxxxx
+  const CHECKOUT_TRIGGER_URL = "https://r-engineeringteam.slack.com/shortcuts/TRxxxxxxxxxxxx"; // 貸出（要置換）
+  const CHECKIN_TRIGGER_URL  = "https://r-engineeringteam.slack.com/shortcuts/TRyyyyyyyyyyyy"; // 返却（要置換）
+
+  // 2) ワークスペースログインURL
+  const SLACK_WORKSPACE_URL = "https://r-engineeringteam.slack.com";
 
   // =========================
-  // 1) URLから物品ID取得
+  // 物品ID取得（?item=SET-003）
   // =========================
-  // 例：https://xxxx.github.io/inventory/i/?item=SET-003
   const params = new URLSearchParams(location.search);
   const itemId = params.get("item") || "UNKNOWN";
   document.getElementById("itemId").textContent = itemId;
 
   // =========================
-  // 2) Slack Link Trigger URL 作成
-  // ※ 未ログインならログイン画面に誘導される
+  // ボタンリンク設定
   // =========================
-  const checkoutUrl =
-    `https://r-engineeringteam.slack.com/shortcuts/${encodeURIComponent(CHECKOUT_TRIGGER_ID)}?item=${encodeURIComponent(itemId)}`;
-  const checkinUrl  =
-    `https://r-engineeringteam.slack.com/shortcuts/${encodeURIComponent(CHECKIN_TRIGGER_ID)}?item=${encodeURIComponent(itemId)}`;
+  // Trigger URLに item を付与（Slackアプリ側で受け取る）
+  const checkoutUrl = `${CHECKOUT_TRIGGER_URL}?item=${encodeURIComponent(itemId)}`;
+  const checkinUrl  = `${CHECKIN_TRIGGER_URL}?item=${encodeURIComponent(itemId)}`;
 
   document.getElementById("checkoutLink").href = checkoutUrl;
   document.getElementById("checkinLink").href  = checkinUrl;
 
-  // Debug表示
-  document.getElementById("debug").textContent =
-    `item=${itemId} / checkout=${checkoutUrl} / checkin=${checkinUrl}`;
+  // ログインリンク（さっきの動作）
+  document.getElementById("slackLogin").href = SLACK_WORKSPACE_URL;
+
+  // Debug
+  document.getElementById("debug").textContent = `item=${itemId} / checkout=${checkoutUrl} / checkin=${checkinUrl}`;
 </script>
 </body>
 </html>
