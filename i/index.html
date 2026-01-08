@@ -10,9 +10,9 @@
     .title{font-size:18px;font-weight:700;margin-bottom:8px}
     .itemid{font-size:28px;font-weight:800;margin:8px 0}
     .btn{
-      display:block;width:100%;padding:14px;border-radius:12px;border:0;
-      font-size:16px;font-weight:700;margin-top:10px;cursor:pointer;
-      text-align:center;text-decoration:none
+      display:block;width:100%;padding:14px;border-radius:12px;
+      border:0;font-size:16px;font-weight:700;margin-top:10px;
+      cursor:pointer;text-align:center;text-decoration:none
     }
     .primary{background:#111;color:#fff}
     .secondary{background:#eee;color:#111}
@@ -28,20 +28,19 @@
     <div class="itemid" id="itemId">UNKNOWN</div>
 
     <div class="hint">
-      「貸し出す」または「返却を受け取る」を押すと、Slackの物品管理チャンネルが開きます。<br/>
+      下のボタンを押すと <b>Web版Slack</b> の物品管理チャンネルが開きます。<br/>
       ※未ログインの場合はログイン画面が表示されます。
     </div>
 
-    <!-- どちらを押しても同じチャンネルへ -->
+    <!-- Web版Slackを必ず開く -->
     <a id="checkoutLink" class="btn primary" href="#" target="_blank" rel="noopener">
-      ✅ 貸し出す（物品管理チャンネルを開く）
+      ✅ 貸し出す（Web版Slackを開く）
     </a>
 
     <a id="checkinLink" class="btn secondary" href="#" target="_blank" rel="noopener">
-      📦 返却を受け取る（物品管理チャンネルを開く）
+      📦 返却を受け取る（Web版Slackを開く）
     </a>
 
-    <!-- 任意：チャンネル内で貼り付ける用にIDを見せる -->
     <div class="hint" style="margin-top:12px;">
       物品ID：<b><span id="itemIdInline">UNKNOWN</span></b>
     </div>
@@ -54,10 +53,11 @@
   document.getElementById("itemId").textContent = itemId;
   document.getElementById("itemIdInline").textContent = itemId;
 
-  // 物品管理チャンネル（あなたの指定URL）
-  const CHANNEL_URL = "https://r-engineeringteam.slack.com/archives/C04TZQE4W95";
+  // Web版Slackの物品管理チャンネル（確定URL）
+  const CHANNEL_URL =
+    "https://r-engineeringteam.slack.com/archives/C04TZQE4W95";
 
-  // とにかく確実にここへ飛ばす
+  // 両方とも同じWeb版Slackへ
   document.getElementById("checkoutLink").href = CHANNEL_URL;
   document.getElementById("checkinLink").href  = CHANNEL_URL;
 </script>
