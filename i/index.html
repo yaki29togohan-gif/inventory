@@ -17,10 +17,6 @@
     .primary{background:#111;color:#fff}
     .secondary{background:#eee;color:#111}
     .hint{color:#555;font-size:13px;margin-top:10px}
-    .row{display:flex; gap:10px; margin-top:10px}
-    .row a{flex:1}
-    .small{font-size:12px;color:#666;margin-top:8px}
-    .link{color:#0b66c3;text-decoration:underline}
   </style>
 </head>
 
@@ -32,61 +28,38 @@
     <div class="itemid" id="itemId">UNKNOWN</div>
 
     <div class="hint">
-      「貸し出す / 返却を受け取る」を押すと Slack の入力フォームが開きます。<br/>
-      開かない場合は、下の「Slackにログイン」を押してログイン後、もう一度ボタンを押してください。
+      「貸し出す」または「返却を受け取る」を押すと、Slackの物品管理チャンネルが開きます。<br/>
+      ※未ログインの場合はログイン画面が表示されます。
     </div>
 
-    <div class="row">
-      <a id="checkoutLink" class="btn primary" href="#">✅ 貸し出す</a>
-      <a id="checkinLink"  class="btn secondary" href="#">📦 返却を受け取る</a>
-    </div>
+    <!-- どちらを押しても同じチャンネルへ -->
+    <a id="checkoutLink" class="btn primary" href="#" target="_blank" rel="noopener">
+      ✅ 貸し出す（物品管理チャンネルを開く）
+    </a>
 
-    <!-- これが “さっきのログイン誘導” -->
-    <div class="small">
-      👉 <a id="slackLogin" class="link" href="#" target="_blank" rel="noopener">Slackにログインする（開かない場合のみ）</a>
-    </div>
+    <a id="checkinLink" class="btn secondary" href="#" target="_blank" rel="noopener">
+      📦 返却を受け取る（物品管理チャンネルを開く）
+    </a>
 
-    <!-- Debug（不要なら丸ごと消してOK） -->
-    <div class="small" style="margin-top:10px;">
-      Debug: <span id="debug"></span>
+    <!-- 任意：チャンネル内で貼り付ける用にIDを見せる -->
+    <div class="hint" style="margin-top:12px;">
+      物品ID：<b><span id="itemIdInline">UNKNOWN</span></b>
     </div>
   </div>
 
 <script>
-  // =========================
-  // 設定（ここだけ置き換え）
-  // =========================
-
-  // 1) SlackのLink Trigger URL（Slackの管理画面で表示されるURLをそのまま貼る）
-  // 例）https://r-engineeringteam.slack.com/shortcuts/TRxxxxxxxxxxxx
-  const CHECKOUT_TRIGGER_URL = "https://r-engineeringteam.slack.com/shortcuts/TRxxxxxxxxxxxx"; // 貸出（要置換）
-  const CHECKIN_TRIGGER_URL  = "https://r-engineeringteam.slack.com/shortcuts/TRyyyyyyyyyyyy"; // 返却（要置換）
-
-  // 2) ワークスペースログインURL
-  const SLACK_WORKSPACE_URL = "https://r-engineeringteam.slack.com";
-
-  // =========================
-  // 物品ID取得（?item=SET-003）
-  // =========================
+  // QR例: https://xxxx.github.io/inventory/i/?item=SET-003
   const params = new URLSearchParams(location.search);
   const itemId = params.get("item") || "UNKNOWN";
   document.getElementById("itemId").textContent = itemId;
+  document.getElementById("itemIdInline").textContent = itemId;
 
-  // =========================
-  // ボタンリンク設定
-  // =========================
-  // Trigger URLに item を付与（Slackアプリ側で受け取る）
-  const checkoutUrl = `${CHECKOUT_TRIGGER_URL}?item=${encodeURIComponent(itemId)}`;
-  const checkinUrl  = `${CHECKIN_TRIGGER_URL}?item=${encodeURIComponent(itemId)}`;
+  // 物品管理チャンネル（あなたの指定URL）
+  const CHANNEL_URL = "https://r-engineeringteam.slack.com/archives/C04TZQE4W95";
 
-  document.getElementById("checkoutLink").href = checkoutUrl;
-  document.getElementById("checkinLink").href  = checkinUrl;
-
-  // ログインリンク（さっきの動作）
-  document.getElementById("slackLogin").href = SLACK_WORKSPACE_URL;
-
-  // Debug
-  document.getElementById("debug").textContent = `item=${itemId} / checkout=${checkoutUrl} / checkin=${checkinUrl}`;
+  // とにかく確実にここへ飛ばす
+  document.getElementById("checkoutLink").href = CHANNEL_URL;
+  document.getElementById("checkinLink").href  = CHANNEL_URL;
 </script>
 </body>
 </html>
