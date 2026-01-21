@@ -8,58 +8,155 @@
     body{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;margin:16px;line-height:1.4}
     .card{border:1px solid #ddd;border-radius:14px;padding:16px;max-width:520px;margin:auto}
     .title{font-size:18px;font-weight:700;margin-bottom:8px}
-    .itemid{font-size:28px;font-weight:800;margin:8px 0}
-    .btn{
-      display:block;width:100%;padding:14px;border-radius:12px;
-      border:0;font-size:16px;font-weight:700;margin-top:10px;
-      cursor:pointer;text-align:center;text-decoration:none
+    .itemid{font-size:26px;font-weight:800;margin:6px 0}
+    label{display:block;margin-top:10px;font-weight:700}
+    input, textarea, select{
+      width:100%; box-sizing:border-box;
+      border:1px solid #ccc; border-radius:10px;
+      padding:12px; font-size:16px; margin-top:6px;
+      background:#fff;
+    }
+    textarea{min-height:90px; resize:vertical}
+    .row{display:flex; gap:10px; margin-top:12px}
+    .row button{flex:1}
+    button{
+      width:100%; padding:14px; border-radius:12px; border:0;
+      font-size:16px; font-weight:800; cursor:pointer;
     }
     .primary{background:#111;color:#fff}
     .secondary{background:#eee;color:#111}
-    .hint{color:#555;font-size:13px;margin-top:10px}
+    .msg{margin-top:12px; font-size:14px}
+    .ok{color:#0a7}
+    .ng{color:#c00; white-space:pre-wrap}
+    .small{color:#666;font-size:12px;margin-top:8px}
+    .pill{display:inline-block;background:#f3f3f3;border-radius:999px;padding:4px 10px;font-size:12px;color:#444}
   </style>
 </head>
 
 <body>
   <div class="card">
-    <div class="title">医開・物品管理</div>
+    <div class="title">課内 物品管理</div>
 
-    <div id="itemName" style="color:#444;">（物品名は任意）</div>
+    <div class="pill">物品ID</div>
     <div class="itemid" id="itemId">UNKNOWN</div>
 
-    <div class="hint">
-      下のボタンを押すと <b>Slack</b> の医開・物品管理チャンネルが開きます。<br/>
-      ※未ログインの場合はログイン画面が表示されます。
+    <label>操作</label>
+    <select id="kind">
+      <option value="貸出">貸出</option>
+      <option value="返却">返却</option>
+    </select>
+
+    <div id="borrowFields">
+      <label>貸出先（誰に貸す）</label>
+      <input id="borrower" placeholder="例：山田さん / リオンテクノ など" />
+
+      <label>返却予定</label>
+      <input id="due" placeholder="例：3/3、2026/3/31、3月上旬 などOK" />
     </div>
 
-    <!-- Slackを開く -->
-    <a id="checkoutLink" class="btn primary" href="#" target="_blank" rel="noopener">
-      ✅ 貸し出す
-    </a>
+    <label>メモ（任意）</label>
+    <textarea id="memo" placeholder="例：付属品一式あり、電源アダプタ同梱、など"></textarea>
 
-    <a id="checkinLink" class="btn secondary" href="#" target="_blank" rel="noopener">
-      📦 返却を受け取る
-    </a>
+    <div class="row">
+      <button class="primary" id="sendBtn">送信してCanvasに追記</button>
+      <button class="secondary" id="clearBtn" type="button">クリア</button>
+    </div>
 
-    <div class="hint" style="margin-top:12px;">
-      物品ID：<b><span id="itemIdInline">UNKNOWN</span></b>
+    <div class="msg" id="msg"></div>
+    <div class="small">
+      ※ 送信できない場合：中継サーバーURL（SUBMIT_URL）がLAN内から見えるか確認してください。
     </div>
   </div>
 
 <script>
-  // QR例: https://xxxx.github.io/inventory/i/?item=SET-003
+  // ========= 設定 =========
+  // ★ここだけあなたの環境に合わせて変更
+  // 同じPCブラウザでテストするなら http://localhost:8080/submit
+  // スマホで使うなら http://<PCのLAN IP>:8080/submit （例: http://192.168.1.10:8080/submit）
+  const SUBMIT_URL = "http://localhost:8080/submit";
+
+  // Python側と合わせる
+  const INVENTORY_SECRET = "something-strong";
+
+  // ========= item取得（?item=SET-003） =========
   const params = new URLSearchParams(location.search);
   const itemId = params.get("item") || "UNKNOWN";
   document.getElementById("itemId").textContent = itemId;
-  document.getElementById("itemIdInline").textContent = itemId;
 
-  // Web版Slackの物品管理チャンネル（確定URL）
-  const CHANNEL_URL =
-    "https://r-engineeringteam.slack.com/archives/C04TZQE4W95";
+  // ========= UI制御 =========
+  const kindEl = document.getElementById("kind");
+  const borrowFields = document.getElementById("borrowFields");
+  const msgEl = document.getElementById("msg");
 
-  // 両方とも同じWeb版Slackへ
-  document.getElementById("checkoutLink").href = CHANNEL_URL;
-  document.getElementById("checkinLink").href  = CHANNEL_URL;
+  function refreshKindUI(){
+    const kind = kindEl.value;
+    borrowFields.style.display = (kind === "貸出") ? "block" : "none";
+  }
+  kindEl.addEventListener("change", refreshKindUI);
+  refreshKindUI();
+
+  document.getElementById("clearBtn").addEventListener("click", () => {
+    document.getElementById("borrower").value = "";
+    document.getElementById("due").value = "";
+    document.getElementById("memo").value = "";
+    msgEl.textContent = "";
+    msgEl.className = "msg";
+  });
+
+  // ========= 送信 =========
+  document.getElementById("sendBtn").addEventListener("click", async () => {
+    msgEl.textContent = "";
+    msgEl.className = "msg";
+
+    if (itemId === "UNKNOWN") {
+      msgEl.textContent = "物品IDがURLから取得できません。QRのURLに ?item=SET-xxx を付けてください。";
+      msgEl.classList.add("ng");
+      return;
+    }
+
+    const kind = kindEl.value;
+    const borrower = document.getElementById("borrower").value.trim();
+    const due = document.getElementById("due").value.trim();
+    const memo = document.getElementById("memo").value.trim();
+
+    if (kind === "貸出") {
+      if (!borrower) { msgEl.textContent = "貸出先を入力してください"; msgEl.classList.add("ng"); return; }
+      if (!due) { msgEl.textContent = "返却予定を入力してください"; msgEl.classList.add("ng"); return; }
+    }
+
+    const payload = {
+      kind,
+      item_id: itemId,
+      borrower: (kind === "貸出") ? borrower : "",
+      due: (kind === "貸出") ? due : "",
+      memo,
+      actor: "web"
+    };
+
+    try {
+      const res = await fetch(SUBMIT_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Inventory-Secret": INVENTORY_SECRET
+        },
+        body: JSON.stringify(payload)
+      });
+
+      const text = await res.text();
+      if (!res.ok) {
+        msgEl.textContent = "送信に失敗しました:\n" + text;
+        msgEl.classList.add("ng");
+        return;
+      }
+
+      msgEl.textContent = "登録しました（Canvasに追記済み）";
+      msgEl.classList.add("ok");
+    } catch (e) {
+      msgEl.textContent = "送信できませんでした（通信エラー）:\n" + (e?.message || e);
+      msgEl.classList.add("ng");
+    }
+  });
 </script>
 </body>
 </html>
